@@ -2,8 +2,8 @@ from pathlib import Path
 
 import typer
 
+from . import output
 from .db import JournalDatabase
-from .models import JournalEntry
 
 app = typer.Typer()
 
@@ -27,13 +27,6 @@ def add(
         raise typer.BadParameter(str(e)) from e
 
     print("Entry saved")
-
-
-def _display(entry: JournalEntry) -> None:
-    """Print an entry."""
-    print(
-        f"Title: {entry.title}, Content: {entry.content}, Tags: {', '.join(entry.tags)}"
-    )
 
 
 @app.command("list")
@@ -65,11 +58,7 @@ def list_entries(
         entries = [e for e in entries if any(et.lower() in wanted for et in e.tags)]
 
     # limit entries
-    if entries:
-        for entry in entries[-limit:]:
-            _display(entry)
-    else:
-        print("No entries.")
+    output.list_entries(entries[-limit:])
 
 
 @app.command()
@@ -89,7 +78,6 @@ def search(
         if any(q in p.lower() for p in [entry.title, entry.content] + entry.tags)
     ]
     if len(results) > 0:
-        for entry in results:
-            _display(entry)
+        output.list_entries(results)
     else:
         print("No entries match query")
